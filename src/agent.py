@@ -9,9 +9,14 @@ database = "Apple,Banana,Table,Chair,Sun,Moon,Cat,Dog,River,Mountain,Computer,Ph
 
 # Represents the game agent
 class Agent:
-    def __init__(self):
+    def __init__(self, is_dealer=False):
         self.database = self.tokenize(database)
         self.hand = []
+
+        self.score = 0
+
+        self.is_dealer = is_dealer
+        self.green_card = None
 
     def play_card(self):
         """
@@ -20,14 +25,29 @@ class Agent:
         """
         return self.hand.pop(0)
     
-    def draw_hand(self, deck):
+    def draw_hand(self, deck, num_cards=5):
         """
         Draws a hand from the deck
         :param deck: list of card datatype
         :return: None
         """
-        for i in range(5):
+        for i in range(num_cards):
             self.add_card(deck.pop(0))
+
+    def draw_green_card(self, deck):
+        """
+        Draws a green card from the deck
+        :param deck: list of card datatype
+        :return: None
+        """
+        self.green_card = deck.pop(0)
+    
+    def get_green_card(self):
+        """
+        Returns the green card
+        :return: card datatype
+        """
+        return self.green_card
 
     def add_card(self, card):
         """
