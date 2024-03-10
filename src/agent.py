@@ -9,20 +9,45 @@ database = "Apple,Banana,Table,Chair,Sun,Moon,Cat,Dog,River,Mountain,Computer,Ph
 
 # Represents the game agent
 class Agent:
-    def __init__(self, is_dealer=False):
+    def __init__(self, agent_type="random", is_dealer=False):
         self.database = self.tokenize(database)
         self.hand = []
 
+        self.agent_type = agent_type
         self.score = 0
 
         self.is_dealer = is_dealer
         self.green_card = None
+
+    def judge(self, cards):
+        """
+        Judges the cards of the other players
+        """
 
     def play_card(self):
         """
         Plays a card from the agent's hand
         :return: card datatype
         """
+        if (self.agent_type == "random"):
+            return self.hand.pop(0)
+        elif (self.agent_type == "pos"):
+            return self.play_card_pos()
+
+    def play_card_pos(self):
+        """
+        Plays a card from the agent's hand based on similar parts of speach
+        :return: card datatype
+        """
+        tags = self.get_pos_tags()
+        
+        if (self.green_card is not None):
+            target = nltk.pos_tag([self.green_card])
+                        
+            for tag in tags:
+                if (target == tag[0][1]):
+                    return self.hand.pop(tags.index(tag))
+                
         return self.hand.pop(0)
     
     def draw_hand(self, deck, num_cards=5):
