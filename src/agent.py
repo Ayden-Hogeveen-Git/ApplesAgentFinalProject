@@ -1,8 +1,10 @@
 # Takes a card datatype as input and outputs a card datatype
+import random
 from card import Card
 import nltk
 import re
 
+# nltk.download()  # uncomment then run to manage nltk packages
 
 database = "Apple,Banana,Table,Chair,Sun,Moon,Cat,Dog,River,Mountain,Computer,Phone,Book,Car,Music,Art,Water,Fire,Earth,Air,Pizza,Coffee,Tea,Shoe,Hat,Guitar,Soccer,Basketball,Football,Swimming,Running,Dancing,Singing,Painting,Drawing,Writing,Reading,Eating,Sleeping,Dreaming,Laughing,Crying,Happiness,Sadness,Anger,Love,Friendship,Family,Work,School,Holiday,Vacation,Beach,Forest,Park,City,Country,Bridge,House,Building,Skyscraper,Tower,Train,Plane,Boat,Bike,Helmet,Glasses,Camera,Microphone,Clock,Watch,Mirror,Window,Door,Key,Lock,Pen,Pencil,Paper,Notebook,Marker,Highlighter,Scissors,Tape,Glue,Ruler,Calculator,Money,Wallet,Bag,Backpack,Suitcase,Jacket,Sweater,Scarf,Gloves,Hat,Boots,Socks,Jeans,Dress,Shirt,T-shirt,Skirt"
 
@@ -36,7 +38,7 @@ class Agent:
 
     def play_card_pos(self):
         """
-        Plays a card from the agent's hand based on similar parts of speach
+        Plays a card from the agent's hand based on similar parts of speech
         :return: card datatype
         """
         tags = self.get_pos_tags()
@@ -116,3 +118,20 @@ class Agent:
         for card in self.hand:
             string += "\n" + str(card)
         return string
+
+
+# p1 = Agent()  # arg1<agent_type>, arg2<is_dealer>
+# print(p1.database)  # prints full list of all green cards (nouns)
+""" This whole main is for demo purposes ONLY. """
+if __name__ == "__main__":
+    print("Part 1) Let's select a green card from the database and let the agent choose the ""best"" red one:")
+    p1 = Agent()
+    random.shuffle(p1.database)
+    p1.draw_green_card(p1.database)
+    print("Here is our green card: {}".format(p1.get_green_card()))
+    print("Agent's Turn...")
+
+    userInput = input("Part 2) Enter a green card (noun): ")  # assumes a valid input
+    p2 = Agent()
+    p2.green_card = userInput
+    print("Agent's Turn...")
