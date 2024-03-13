@@ -3,7 +3,7 @@ import random
 from card import Card
 import nltk
 import re
-
+from decks import RedCards  # Demo purposes ONLY
 # nltk.download()  # uncomment then run to manage nltk packages
 
 database = "Apple,Banana,Table,Chair,Sun,Moon,Cat,Dog,River,Mountain,Computer,Phone,Book,Car,Music,Art,Water,Fire,Earth,Air,Pizza,Coffee,Tea,Shoe,Hat,Guitar,Soccer,Basketball,Football,Swimming,Running,Dancing,Singing,Painting,Drawing,Writing,Reading,Eating,Sleeping,Dreaming,Laughing,Crying,Happiness,Sadness,Anger,Love,Friendship,Family,Work,School,Holiday,Vacation,Beach,Forest,Park,City,Country,Bridge,House,Building,Skyscraper,Tower,Train,Plane,Boat,Bike,Helmet,Glasses,Camera,Microphone,Clock,Watch,Mirror,Window,Door,Key,Lock,Pen,Pencil,Paper,Notebook,Marker,Highlighter,Scissors,Tape,Glue,Ruler,Calculator,Money,Wallet,Bag,Backpack,Suitcase,Jacket,Sweater,Scarf,Gloves,Hat,Boots,Socks,Jeans,Dress,Shirt,T-shirt,Skirt"
@@ -60,6 +60,13 @@ class Agent:
         """
         for i in range(num_cards):
             self.add_card(deck.pop(0))
+
+    def demo_red_card(self):
+        all_red_cards = RedCards().cards
+        first_letter = self.green_card[0]
+        for i in range(len(all_red_cards)):
+            if all_red_cards[i][0] == first_letter:
+                return all_red_cards[i]
 
     def draw_green_card(self, deck):
         """
@@ -130,8 +137,9 @@ if __name__ == "__main__":
     p1.draw_green_card(p1.database)
     print("Here is our green card: {}".format(p1.get_green_card()))
     print("Agent's Turn...")
-
+    print(p1.demo_red_card())
     userInput = input("Part 2) Enter a green card (noun): ")  # assumes a valid input
     p2 = Agent()
     p2.green_card = userInput
     print("Agent's Turn...")
+    print(p2.demo_red_card())
