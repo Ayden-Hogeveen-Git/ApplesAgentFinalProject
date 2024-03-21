@@ -2,8 +2,19 @@ from random import shuffle
 
 
 class Deck:
-    def __init__(self, cards):
+    def __init__(self, filename, cards=[]):
         self.cards = cards
+        if (filename is not None):
+            self.get_from_file(filename)
+
+    def get_from_file(self, filename):
+        """
+        Gets cards as input from a file and helps create the deck datatype
+        """
+        with open(filename, 'r') as f:
+            self.cards = f.readlines()
+
+        self.cards = [line.strip() for line in self.cards]
 
     def get_cards(self):
         return self.cards

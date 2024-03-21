@@ -6,13 +6,10 @@ import re
 from decks import RedCards  # Demo purposes ONLY
 # nltk.download()  # uncomment then run to manage nltk packages
 
-database = "Apple,Banana,Table,Chair,Sun,Moon,Cat,Dog,River,Mountain,Computer,Phone,Book,Car,Music,Art,Water,Fire,Earth,Air,Pizza,Coffee,Tea,Shoe,Hat,Guitar,Soccer,Basketball,Football,Swimming,Running,Dancing,Singing,Painting,Drawing,Writing,Reading,Eating,Sleeping,Dreaming,Laughing,Crying,Happiness,Sadness,Anger,Love,Friendship,Family,Work,School,Holiday,Vacation,Beach,Forest,Park,City,Country,Bridge,House,Building,Skyscraper,Tower,Train,Plane,Boat,Bike,Helmet,Glasses,Camera,Microphone,Clock,Watch,Mirror,Window,Door,Key,Lock,Pen,Pencil,Paper,Notebook,Marker,Highlighter,Scissors,Tape,Glue,Ruler,Calculator,Money,Wallet,Bag,Backpack,Suitcase,Jacket,Sweater,Scarf,Gloves,Hat,Boots,Socks,Jeans,Dress,Shirt,T-shirt,Skirt"
-
 
 # Represents the game agent
 class Agent:
     def __init__(self, agent_type="random", is_dealer=False):
-        self.database = self.tokenize(database)
         self.hand = []
 
         self.agent_type = agent_type
@@ -25,6 +22,7 @@ class Agent:
         """
         Judges the cards of the other players
         """
+        pass
 
     def play_card(self):
         """
@@ -109,12 +107,12 @@ class Agent:
             pos_tags.append(nltk.pos_tag([card]))
         return pos_tags
 
-    def get_database(self):
+    def get_hand_size(self):
         """
-        Returns the database of words
-        :return: list of strings
+        Returns the size of the agent's hand
+        :return: int
         """
-        return self.database
+        return len(self.hand)
 
     def __str__(self):
         """
