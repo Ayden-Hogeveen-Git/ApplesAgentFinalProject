@@ -3,8 +3,6 @@ from agent import Agent
 from decks import Deck, GreenCards, RedCards
 
 
-#TODO: Fix pop from empty list error
-
 class Game:
     def __init__(self, num_players=3, max_score=3, green_cards=None, red_cards=None):
         self.running = True
@@ -18,12 +16,14 @@ class Game:
         self.redCards.shuffle()
 
         players = []
+        cards_on_table = []
         deal = 0
+        x = 0
 
         for i in range(self.num_players):
-            players.append(Agent())
+            players.append(Agent("assoc"))
         
-        # All players draw 5 cards
+        # All players draw 7 cards
         for player in players:
             player.draw_hand(self.redCards.get_cards())
 
@@ -39,14 +39,28 @@ class Game:
             for i in range(len(players)):
                 if (i != deal):
                     players[i].green_card = players[deal].get_green_card()
-                    print(f"{i+1}: {players[i].play_card()}")
+
+                    card_played = players[i].play_card()
+                    cards_on_table.append((i, card_played))
+
+                    print(f"{i+1}: {card_played}")
                     players[i].draw_hand(self.redCards.get_cards(), 1)
 
-                # Arbitrary Score (dealer should pick the best and award a point)
-                players[i].score += 1
+            # Judge the cards
+            x = players[deal].judge(cards_on_table)
+            players[x].score += 1
+            cards_on_table = []
 
+
+            # Check if a player has reached the max score
+            for i in range(len(players)):
                 if (players[i].score == self.max_score):
                     self.running = False
+
+            # Print the scores
+            print("-"*32)
+            for i in range(len(players)):
+                print(f"Player {i+1}: {players[i].score}")
                 
             # End of round
             deal = (deal+1) % len(players)
