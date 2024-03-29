@@ -7,6 +7,7 @@ from decks import RedCards  # Demo purposes ONLY
 # nltk.download()  # uncomment then run to manage nltk packages
 
 
+
 # Represents the game agent
 class Agent:
     def __init__(self, agent_type="random", is_dealer=False):
@@ -21,8 +22,17 @@ class Agent:
     def judge(self, cards):
         """
         Judges the cards of the other players
+        :param cards: list of tubles including index and card datatype
+        :return: int (index of the winning player)
         """
-        pass
+        best_card = cards[0][0]
+        temp = nltk.edit_distance(self.green_card, cards[0][1])
+        for i in range(1, len(cards)):
+            if (temp > nltk.edit_distance(self.green_card, cards[i][1])):
+                best_card = cards[i][0]
+                temp = nltk.edit_distance(self.green_card, cards[i][1])
+        return best_card           
+            
 
     def play_card(self):
         """
@@ -30,9 +40,33 @@ class Agent:
         :return: card datatype
         """
         if (self.agent_type == "random"):
-            return self.hand.pop(0)
+            return self.play_random_card()
+        elif (self.agent_type == "alit"):
+            return self.play_alit_card()
+        elif (self.agent_type == "assoc"):
+            return self.play_associated_card()
         elif (self.agent_type == "pos"):
             return self.play_card_pos()
+
+    def play_random_card(self):
+        """
+        Plays a card from the agent's hand randomly
+        :return: card datatype
+        """
+        return self.hand.pop(random.randint(0, len(self.hand) - 1))
+    
+    def play_alit_card(self):
+        """
+        Plays a card from the agent's had based on the first letter of the green 
+        card, otherwise plays the first card
+        :return: card datatype
+        """
+        first_letter = self.green_card[0]
+        for i in range(len(self.hand)):
+            if (self.hand[i][0] == first_letter):
+                return self.hand.pop(i)
+        
+        return self.hand.pop(0)
 
     def play_card_pos(self):
         """
@@ -50,7 +84,20 @@ class Agent:
                 
         return self.hand.pop(0)
     
-    def draw_hand(self, deck, num_cards=5):
+    def play_associated_card(self):
+        """
+        Plays a card from the agent's hand based on the Levenshtein distance
+        between the green card and the red card. This distance is calculated from
+        the number of single-character edits required to change one word into the other.
+        :return: card datatype
+        """
+        card_scores = []
+        for i in range(len(self.hand)):
+            card_scores.append(nltk.edit_distance(self.green_card, self.hand[i]))
+        
+        return self.hand.pop(card_scores.index(max(card_scores)))
+    
+    def draw_hand(self, deck, num_cards=7):
         """
         Draws a hand from the deck
         :param deck: list of card datatype
