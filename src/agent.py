@@ -2,13 +2,16 @@
 import random
 from card import Card
 import nltk
+nltk.download("brown")
+nltk.download("reuters")
+nltk.download("punkt")
+
 import re
 from decks import RedCards  # Demo purposes ONLY
 # nltk.download()  # uncomment then run to manage nltk packages
 
 from nltk.tokenize import RegexpTokenizer
-from gensim.models import Word2Vec
-from gensim.models import KeyedVectors
+import gensim
 
 from nltk.corpus import brown
 from nltk.corpus import reuters
@@ -212,9 +215,9 @@ class Agent:
 
         # Note this will take 30-ish seconds every run. The model will train itself at the
         # beginning 
-        model = Word2Vec(vector_size=size_vec, window=5, min_count=3, workers=10)
+        model = gensim.models.Word2Vec(vector_size=size_vec, window=5, min_count=3, workers=4)
         model.build_vocab(corpus)
-        model.train(corpus, total_examples=model.corpus_count, epochs=100)
+        model.train(corpus, total_examples=model.corpus_count, epochs=10)
         wv = model.wv
 
         return wv
