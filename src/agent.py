@@ -6,7 +6,7 @@ import re
 from decks import RedCards  # Demo purposes ONLY
 # nltk.download()  # uncomment then run to manage nltk packages
 
-from gensim.utils import simple_preprocess
+from nltk.tokenize import RegexpTokenizer
 from gensim.models import Word2Vec
 from gensim.models import KeyedVectors
 
@@ -196,14 +196,15 @@ class Agent:
         :return: dict (vector representation of words)
         """
         size_vec = 300
+        tokenizer = RegexpTokenizer(r'\w+')
 
         corpus = []
         for sentence in brown.sents():
             # convert all to lowercase and remove punctuation
-            corpus.append(simple_preprocess(' '.join(sentence)))
+            corpus.append(tokenizer.tokenize(' '.join(sentence)))
         
         for sentence in reuters.sents():
-            corpus.append(simple_preprocess(' '.join(sentence)))
+            corpus.append(tokenizer.tokenize(' '.join(sentence)))
 
         # Add definitions of green and red cards to the corpus
         self.add_green_card_examples(corpus)
@@ -220,6 +221,7 @@ class Agent:
     
     def get_red_cards(self):
         red_cards = {}
+        tokenizer = RegexpTokenizer(r'\w+')
         with open("Basic_RED_cards.txt", "r") as file:
             for line in file.readlines():
                 card = line.strip().split("&")
@@ -227,7 +229,7 @@ class Agent:
                 name = card[0].lower()
                 red_cards[name] = []
 
-                for word in simple_preprocess(card[1]):
+                for word in tokenizer.tokenize(card[1]):
                     red_cards[name].append(word)
                 
         return red_cards
