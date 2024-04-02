@@ -6,6 +6,13 @@ import re
 from decks import RedCards  # Demo purposes ONLY
 # nltk.download()  # uncomment then run to manage nltk packages
 
+from gensim.utils import simple_preprocess
+from gensim.models import Word2Vec
+from gensim.models import KeyedVectors
+
+from nltk.corpus import brown
+from nltk.corpus import reuters
+import numpy as np
 
 
 # Represents the game agent
@@ -161,6 +168,174 @@ class Agent:
         """
         return len(self.hand)
 
+    #
+    # START ADD -J
+    #
+
+    def add_green_card_examples(self, corpus):
+        """
+        TODO
+        Adds definitions of given green cards to the corpus
+        :return: None
+        """
+
+        return None
+
+    def add_red_card_examples(self, corpus):
+        """
+        TODO
+        Adds definitions of given red cards to the corpus
+        :return: None
+        """
+
+        return None
+
+    def train_model(self):
+        """
+        Trains a model to be used by our agent
+        :return: dict (vector representation of words)
+        """
+        size_vec = 300
+
+        corpus = []
+        for sentence in brown.sents():
+            # convert all to lowercase and remove punctuation
+            corpus.append(simple_preprocess(' '.join(sentence)))
+        
+        for sentence in reuters.sents():
+            corpus.append(simple_preprocess(' '.join(sentence)))
+
+        # Add definitions of green and red cards to the corpus
+        self.add_green_card_examples(corpus)
+        self.add_red_card_examples(corpus)
+
+        # Note this will take 30-ish seconds every run. The model will train itself at the
+        # beginning 
+        model = Word2Vec(vector_size=size_vec, window=5, min_count=3, workers=10)
+        model.build_vocab(corpus)
+        model.train(corpus, total_examples=model.corpus_count, epochs=100)
+        wv = model.wv
+
+        return wv
+    
+    def get_red_cards(self):
+        red_cards = {}
+        with open("Basic_RED_cards.txt", "r") as file:
+            for line in file.readlines():
+                card = line.strip().split("&")
+
+                name = card[0].lower()
+                red_cards[name] = []
+
+                for word in simple_preprocess(card[1]):
+                    red_cards[name].append(word)
+                
+        return red_cards
+
+    def get_green_cards(self):
+        green_cards = {}
+        with open("Basic_Green_Cards.txt", "r") as file:
+            for line in file.readlines():
+                card = line.strip().split("&")
+
+                name = card[0].lower()
+                green_cards[name] = []
+                
+                for word in card[1].split(", "):
+                    green_cards[name].append(word.lower())
+
+        return green_cards
+
+
+    def modify_hand_red(self, deck, hand, wv):
+        size_vec = 300
+        card_to_vec = {}
+
+        for card in hand:
+            # check each of these words and calculate its average vector
+            words_to_check = card.split() + deck[card]
+
+            average_vector = np.zeros(shape=size_vec)
+            count = 0
+
+            for word in words_to_check:
+                if word in wv.key_to_index:
+                    count += 1
+                    average_vector += wv[word]
+            
+            card_to_vec[card] = average_vector/count if count > 0 else average_vector
+        return card_to_vec
+
+
+    def modify_hand_green(self, deck, hand, wv):
+        size_vec = 300
+        card_to_vec = {}
+
+        for card in hand.split():
+            words_to_check = card.split() + deck[card]
+
+            average_vector = np.zeros(shape=size_vec)
+            count = 0
+
+            for word in words_to_check:
+                if word in wv.key_to_index:
+                    count += 1
+                    average_vector += wv[word]
+            
+            card_to_vec[card] = average_vector/count if count > 0 else average_vector
+        return card_to_vec
+
+
+    def draw_red_cards(self, deck, num):
+        hand = []
+        for _ in range(num):
+            hand.append(random.choice(list(deck.keys())))
+        return hand
+
+
+    def pick_using_model(self, wv):
+        red_cards = self.get_red_cards()
+        green_cards = self.get_green_cards()
+        
+        # get 5 cards from red cards
+        red_card_hand = self.draw_red_cards(red_cards, 5)
+
+        # pick a random green card
+        green_card = random.choice(list(green_cards.keys()))
+        
+        # create red card hand with vector for each card
+        # to do this, go through all words of the red card and get its average vector
+        red_card_hand = self.modify_hand_red(red_cards, red_card_hand, wv)
+        
+        # now do the same to the green card
+        green_card = self.modify_hand_green(green_cards, green_card, wv)
+        
+        # now go through each red card and check its cosine similarity to the green card. pick the
+        # highest
+        check_green = list(green_card.keys())[0]
+        
+        best_sim = -5
+        best_card = ""
+        
+        for card in red_card_hand:
+            similarity = np.dot(green_card[check_green], red_card_hand[card])/(np.linalg.norm(green_card[check_green])*np.linalg.norm(red_card_hand[card]))
+            print(f"{card}'s similarity to '{check_green}' is {similarity}")
+            if similarity > best_sim:
+                best_sim = similarity
+                best_card = card
+        
+        # either our green card did not have a score or our red cards did not have a score
+        if best_card == "":
+            best_card = random.choice(list(red_card_hand.keys()))
+
+        print(f"\nCards: {list(red_card_hand.keys())}")
+        print(f"The best card for '{check_green}' is '{best_card}' with a score of {best_sim}")
+        pass
+    
+    #
+    # END ADD -J
+    #
+
     def __str__(self):
         """
         Overloads the str method to return the agents hand when printed
@@ -176,15 +351,20 @@ class Agent:
 # print(p1.database)  # prints full list of all green cards (nouns)
 """ This whole main is for demo purposes ONLY. """
 if __name__ == "__main__":
-    print("Part 1) Let's select a green card from the database and let the agent choose the ""best"" red one:")
+    # print("Part 1) Let's select a green card from the database and let the agent choose the ""best"" red one:")
+    # p1 = Agent()
+    # random.shuffle(p1.database)
+    # p1.draw_green_card(p1.database)
+    # print("Here is our green card: {}".format(p1.get_green_card()))
+    # print("Agent's Turn...")
+    # print(p1.demo_red_card())
+    # userInput = input("Part 2) Enter a green card (noun): ")  # assumes a valid input
+    # p2 = Agent()
+    # p2.green_card = userInput
+    # print("Agent's Turn...")
+    # print(p2.demo_red_card())
+
     p1 = Agent()
-    random.shuffle(p1.database)
-    p1.draw_green_card(p1.database)
-    print("Here is our green card: {}".format(p1.get_green_card()))
-    print("Agent's Turn...")
-    print(p1.demo_red_card())
-    userInput = input("Part 2) Enter a green card (noun): ")  # assumes a valid input
-    p2 = Agent()
-    p2.green_card = userInput
-    print("Agent's Turn...")
-    print(p2.demo_red_card())
+    wv = p1.train_model()
+    p1.pick_using_model(wv)
+
