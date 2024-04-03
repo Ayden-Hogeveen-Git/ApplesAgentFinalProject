@@ -14,9 +14,7 @@ class Deck:
         with open(filename, 'r') as f:
             for line in f.readlines():
                 card = line.split("&")
-                self.cards.append(Card(card[0], card[1]))
-
-        # self.cards = [line.strip() for line in self.cards]
+                self.cards.append(Card(card[0].strip(), card[1].strip()))
 
     def get_cards(self):
         return self.cards
