@@ -1,11 +1,12 @@
 # Represents the game cards
 
 class Card:
-    def __init__(self, value):
-        self.value = value
+    def __init__(self, name, description):
+        self.name = name
+        self.description = description
 
     def __str__(self):
         """
         Overloads the str method to return the value of the card when printed
         """
-        return str(self.value)
+        return f"Card name: {self.name}\nCard Description: {self.description}"

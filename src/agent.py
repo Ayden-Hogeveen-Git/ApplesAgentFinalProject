@@ -36,11 +36,11 @@ class Agent:
         :return: int (index of the winning player)
         """
         best_card = cards[0][0]
-        temp = nltk.edit_distance(self.green_card, cards[0][1])
+        temp = nltk.edit_distance(self.green_card.name, cards[0][1].name)
         for i in range(1, len(cards)):
-            if (temp > nltk.edit_distance(self.green_card, cards[i][1])):
+            if (temp > nltk.edit_distance(self.green_card.name, cards[i][1].name)):
                 best_card = cards[i][0]
-                temp = nltk.edit_distance(self.green_card, cards[i][1])
+                temp = nltk.edit_distance(self.green_card.name, cards[i][1].name)
         return best_card           
             
 
@@ -103,7 +103,7 @@ class Agent:
         """
         card_scores = []
         for i in range(len(self.hand)):
-            card_scores.append(nltk.edit_distance(self.green_card, self.hand[i]))
+            card_scores.append(nltk.edit_distance(self.green_card.name, self.hand[i].name))
         
         return self.hand.pop(card_scores.index(max(card_scores)))
     
@@ -184,6 +184,7 @@ class Agent:
 
         return None
 
+
     def add_red_card_examples(self, corpus):
         """
         TODO
@@ -192,6 +193,7 @@ class Agent:
         """
 
         return None
+
 
     def train_model(self):
         """
@@ -221,7 +223,8 @@ class Agent:
         wv = model.wv
 
         return wv
-    
+
+ 
     def get_red_cards(self):
         red_cards = {}
         tokenizer = RegexpTokenizer(r'\w+')
@@ -236,6 +239,7 @@ class Agent:
                     red_cards[name].append(word)
                 
         return red_cards
+
 
     def get_green_cards(self):
         green_cards = {}
