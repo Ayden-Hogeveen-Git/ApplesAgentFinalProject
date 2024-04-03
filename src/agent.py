@@ -15,6 +15,7 @@ from gensim.utils import simple_preprocess  # Tokenizes text
 from gensim.models import Word2Vec  # Word2Vec model
 from gensim.models import KeyedVectors  # To save and use model after training
 import os.path  # To check if word vector file is available
+import time     # To time model training time
 import numpy as np
 
 
@@ -260,16 +261,26 @@ class Agent:
         """
         
         # Load data for model
-        data_files = {"train": ["wikitext-train-00000-of-00002.arrow",
-                                "wikitext-train-00001-of-00002.arrow"]}
-        directory = (
-                    "src/corpora/wikitext/wikitext-103-v1/"
-                    "0.0.0/b08601e04326c79dfdd32d625aee71d232d685c3/"
-                    )
-                    
-        data = load_dataset("arrow", data_dir=directory,
-                            data_files=data_files)
+        file_check = ("corpora/wikitext/wikitext-103-v1/"
+                      "0.0.0/b08601e04326c79dfdd32d625aee71d232d685c3/"
+                      "wikitext-train-00000-of-00002.arrow"
+                      )
         
+        if os.path.isfile(file_check):
+            data_files = {"train": ["wikitext-train-00000-of-00002.arrow",
+                            "wikitext-train-00001-of-00002.arrow"]}
+            directory = (
+                        "corpora/wikitext/wikitext-103-v1/"
+                        "0.0.0/b08601e04326c79dfdd32d625aee71d232d685c3/"
+                        )
+            data = load_dataset("arrow", data_dir=directory,
+                        data_files=data_files)
+            
+        else:
+            data = load_dataset("wikitext", "wikitext-103-v1", trust_remote_code=True)
+
+        print("Model is training")
+        start_time = time.time()
         train_sentences = SentenceIterator(data)
         model = Word2Vec(
             sentences=train_sentences,
@@ -279,12 +290,12 @@ class Agent:
             workers=8,
             epochs=5
             )
+        print(f"Model finished training after {time.time() - start_time} seconds")
+
         wv = model.wv
-        print("Done training! trying to save.")
 
         # Save and return model wordvector
         wv.save("a2a.wordvectors")
-        print("Done saving!")
 
         del model
         return wv
