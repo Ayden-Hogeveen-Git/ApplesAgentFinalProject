@@ -46,7 +46,7 @@ class Game:
         while (self.running):
             print("---------------NEW ROUND------------------")
             player_type = "player" if judge != model_player else "judge"
-            print(f"Model player (#{model_player}) is playing as a: {player_type}")
+            print(f"Model player (#{model_player+1}) is playing as a: {player_type}")
 
             print("\nModel player cards in hand:")
             for i, card in enumerate(players[model_player].hand):
