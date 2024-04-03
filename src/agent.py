@@ -32,7 +32,7 @@ class Agent:
     def judge(self, cards):
         """
         Judges the cards of the other players
-        :param cards: list of tubles including index and card datatype
+        :param cards: list of tuples (player number, card)
         :return: int (index of the winning player)
         """
         best_card = cards[0][0]

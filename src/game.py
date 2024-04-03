@@ -13,58 +13,73 @@ class Game:
         self.greenCards = Deck(green_cards)
         self.redCards = Deck(red_cards)
     
-    def run(self, players=[]):
-        self.redCards.shuffle()
-
-        cards_on_table = []
-        deal = randint(0, 3)
-        x = 0
-
-        if (players == []):
-            for i in range(self.num_players):
-                players.append(Agent("assoc"))
-        
-        # All players draw 7 cards
-        for player in players:
-            player.draw_hand(self.redCards.get_cards())
-
-        # Main game loop
-        while (self.running):
-            # Dealer draws a green card
-            players[deal].draw_green_card(self.greenCards.get_cards())
-
-            # Dealer Card
-            # print(f"Dealer's Card: {players[deal].get_green_card()}")
+    def run(self, players=None):
+        # No players are given make it into a list of
+        # containing num_players amount of Agent("assoc")
+        if players is None:
+            players = []
             
-            # Each player plays a card
-            for i in range(len(players)):
-                if (i != deal):
-                    players[i].green_card = players[deal].get_green_card()
+            for _ in range(self.num_players):
+                players.append(Agent("assoc"))
 
-                    card_played = players[i].play_card()
-                    cards_on_table.append((i, card_played))
+        # Shuffle green & red cards
+        self.redCards.shuffle()
+        self.greenCards.shuffle()
 
-                    # print(f"{i+1}: {card_played}")
-                    players[i].draw_hand(self.redCards.get_cards(), 1)
+        # Invisible dealer entity draws 7 red cards for each player
+        for player in players:
+            player.draw_hand(self.redCards.get_cards(), 7)
 
-            # Judge the cards
-            x = players[deal].judge(cards_on_table)
-            players[x].score += 1
-            cards_on_table = []
+        # Determine first judge
+        judge = randint(0, self.num_players-1)
 
+        # Game loop
+        game_round = 1
+        while (self.running):
+            print(f"\nRound {game_round}")
 
-            # Check if a player has reached the max score
-            for i in range(len(players)):
-                if (players[i].score == self.max_score):
-                    print(f"Player {i+1} wins!")
-                    self.running = False
+            # Dealer puts green card on the table
+            green_card = self.greenCards.get_cards().pop()
+
+            # Set up area to put the players red cards in
+            player_card_picks = []
+
+            # Players make their choices
+            for player in range(self.num_players):
+                # Set each players green_card to the drawn green card
+                players[player].green_card = green_card
+
+                # Skip the judge picking a red card
+                if player == judge:
+                    continue
+                
+                # Make each player choose a card by putting it on the table
+                # Drawing card here does the same thing as drawing it
+                # after the judge makes a decision.
+
+                # player_card_picks contains tuples of cards played by a player
+                # -> (player number, card)
+                player_card_picks.append((player, players[player].play_card()))
+                players[player].draw_hand(self.redCards.get_cards(), 1)
+
+            # Judge makes a decision then resets the player card area
+            winner = players[judge].judge(player_card_picks)
+            players[winner].score += 1
+            player_card_picks = []
 
             # Print the scores
-            # print("-"*32)
-            # for i in range(len(players)):
-            #     print(f"Player {i+1}: {players[i].score}")
-                
-            # End of round
-            deal = (deal+1) % len(players)
-        return i
+            for i in range(self.num_players):
+                print(f"Player {i+1}'s score: {players[i].score}")
 
+            # Check if a player has reached the max score
+            for i in range(self.num_players):
+                if (players[i].score == self.max_score):
+                    print(f"\nPlayer {i+1} wins!")
+                    self.running = False
+
+            # Judge will be next player
+            judge = (judge+1) % self.num_players
+            
+            game_round += 1 
+            
+        return None
