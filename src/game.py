@@ -26,7 +26,9 @@ class Game:
                     players.append(Agent("model_training"))
                     continue
 
-                players.append(Agent("assoc"))
+                # players.append(Agent("assoc"))
+                # Change players to model_training
+                players.append(Agent("model_training"))
 
         # Shuffle green & red cards
         self.redCards.shuffle()
