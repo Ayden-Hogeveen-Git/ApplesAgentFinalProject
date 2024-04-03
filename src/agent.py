@@ -2,9 +2,6 @@
 import random
 from card import Card
 import nltk
-nltk.download("brown")
-nltk.download("reuters")
-nltk.download("punkt")
 
 import re
 from decks import RedCards  # Demo purposes ONLY
@@ -13,9 +10,22 @@ from decks import RedCards  # Demo purposes ONLY
 from nltk.tokenize import RegexpTokenizer
 import gensim
 
-from nltk.corpus import brown
-from nltk.corpus import reuters
+from datasets import load_dataset   # Load WikiText corpus
+from gensim.utils import simple_preprocess  # Tokenizes text
+from gensim.models import Word2Vec  # Word2Vec model
+from gensim.models import KeyedVectors  # To save and use model after training
+import os.path  # To check if word vector file is available
 import numpy as np
+
+
+# To use corpus as training data without using too much memory
+class SentenceIterator: 
+    def __init__(self, data): 
+        self.data = data 
+
+    def __iter__(self):
+        for text in self.data["train"]:
+            yield simple_preprocess(text["text"])
 
 
 # Represents the game agent
@@ -29,21 +39,85 @@ class Agent:
         self.is_dealer = is_dealer
         self.green_card = None
 
+        self.wordvector = None
+        if agent_type == "model_training":
+            if os.path.isfile("a2a.wordvectors"):
+                self.wordvector = KeyedVectors.load("a2a.wordvectors", mmap='r')
+            else:
+                self.wordvector = self.train_model()
+        
+
     def judge(self, cards):
         """
         Judges the cards of the other players
         :param cards: list of tuples (player number, card)
         :return: int (index of the winning player)
         """
-        best_card = cards[0][0]
-        temp = nltk.edit_distance(self.green_card.name, cards[0][1].name)
-        for i in range(1, len(cards)):
-            if (temp > nltk.edit_distance(self.green_card.name, cards[i][1].name)):
-                best_card = cards[i][0]
-                temp = nltk.edit_distance(self.green_card.name, cards[i][1].name)
-        return best_card           
-            
+        # Judge based on agent type
 
+        if (self.agent_type == "random"):
+            # Picks random card from the play area
+            return random.randint(0, len(cards) - 1)
+        
+        elif (self.agent_type == "alit"):
+            # Pick the first card that has the same letter
+            # as our green card. Return its index
+            first_letter = self.green_card[0]
+
+            for i in range(len(cards)):
+                if (self.hand[i][0] == first_letter):
+                    return i
+                
+            # Return the first card index since no other cards have the
+            # same letter as the green card
+            return 0
+        
+        elif (self.agent_type == "assoc"):
+            # Returns the lowest Levenshtein distance card index
+            best_card = cards[0][0]
+            temp = nltk.edit_distance(self.green_card.name, cards[0][1].name)
+            for i in range(1, len(cards)):
+                if (temp > nltk.edit_distance(self.green_card.name, cards[i][1].name)):
+                    best_card = cards[i][0]
+                    temp = nltk.edit_distance(self.green_card.name, cards[i][1].name)
+
+            return best_card
+        
+        elif (self.agent_type == "pos"):
+            # Return index of same parts of speech
+            tags = self.get_pos_tags()
+            
+            if (self.green_card is not None):
+                target = nltk.pos_tag([self.green_card])
+                            
+                for tag in tags:
+                    if (target == tag[0][1]):
+                        return (tags.index(tag))
+                    
+            # Return index of first card
+            return 0
+        
+        elif (self.agent_type == "model_training"):
+            red_cards = [card[1] for card in cards]
+            green_card = self.green_card
+            
+            red_cards_with_vectors = self.modify_hand_red(red_cards, self.wordvector)
+            green_card_with_vector = self.modify_hand_green(green_card, self.wordvector)
+
+            best_sim = -5
+            best_card = 0
+            for i, card in enumerate(red_cards_with_vectors):
+                similarity = (np.dot(green_card_with_vector[1], card[1]) /
+                            (np.linalg.norm(green_card_with_vector[1]) * 
+                            np.linalg.norm(card[1]))
+                                )
+                if similarity > best_sim:
+                    best_sim = similarity
+                    best_card = i
+            return best_card
+
+        return 0
+    
     def play_card(self):
         """
         Plays a card from the agent's hand
@@ -57,6 +131,8 @@ class Agent:
             return self.play_associated_card()
         elif (self.agent_type == "pos"):
             return self.play_card_pos()
+        elif (self.agent_type == "model_training"):
+            return self.play_with_model()
 
     def play_random_card(self):
         """
@@ -111,10 +187,15 @@ class Agent:
         """
         Draws a hand from the deck
         :param deck: list of card datatype
-        :return: None
+        :return: Added cards
         """
+        cards = []
         for i in range(num_cards):
-            self.add_card(deck.pop(0))
+            card = deck.pop(0)
+            self.add_card(card)
+            cards.append(card)
+
+        return cards
 
     def demo_red_card(self):
         all_red_cards = RedCards().cards
@@ -171,179 +252,108 @@ class Agent:
         """
         return len(self.hand)
 
-    #
-    # START ADD -J
-    #
-
-    def add_green_card_examples(self, corpus):
-        """
-        TODO
-        Adds definitions of given green cards to the corpus
-        :return: None
-        """
-
-        return None
-
-
-    def add_red_card_examples(self, corpus):
-        """
-        TODO
-        Adds definitions of given red cards to the corpus
-        :return: None
-        """
-
-        return None
-
 
     def train_model(self):
         """
         Trains a model to be used by our agent
         :return: dict (vector representation of words)
         """
-        size_vec = 300
-        tokenizer = RegexpTokenizer(r'\w+')
-
-        corpus = []
-        for sentence in brown.sents():
-            # convert all to lowercase and remove punctuation
-            corpus.append(tokenizer.tokenize(' '.join(sentence)))
         
-        for sentence in reuters.sents():
-            corpus.append(tokenizer.tokenize(' '.join(sentence)))
-
-        # Add definitions of green and red cards to the corpus
-        self.add_green_card_examples(corpus)
-        self.add_red_card_examples(corpus)
-
-        # Note this will take 30-ish seconds every run. The model will train itself at the
-        # beginning 
-        model = gensim.models.Word2Vec(vector_size=size_vec, window=5, min_count=3, workers=4)
-        model.build_vocab(corpus)
-        model.train(corpus, total_examples=model.corpus_count, epochs=10)
+        # Load data for model
+        data_files = {"train": ["wikitext-train-00000-of-00002.arrow",
+                                "wikitext-train-00001-of-00002.arrow"]}
+        directory = (
+                    "src/corpora/wikitext/wikitext-103-v1/"
+                    "0.0.0/b08601e04326c79dfdd32d625aee71d232d685c3/"
+                    )
+                    
+        data = load_dataset("arrow", data_dir=directory,
+                            data_files=data_files)
+        
+        train_sentences = SentenceIterator(data)
+        model = Word2Vec(
+            sentences=train_sentences,
+            vector_size=300,
+            window=5,
+            min_count=5,
+            workers=8,
+            epochs=5
+            )
         wv = model.wv
+        print("Done training! trying to save.")
 
+        # Save and return model wordvector
+        wv.save("a2a.wordvectors")
+        print("Done saving!")
+
+        del model
         return wv
 
  
-    def get_red_cards(self):
-        red_cards = {}
-        tokenizer = RegexpTokenizer(r'\w+')
-        with open("Basic_RED_cards.txt", "r") as file:
-            for line in file.readlines():
-                card = line.strip().split("&")
-
-                name = card[0].lower()
-                red_cards[name] = []
-
-                for word in tokenizer.tokenize(card[1]):
-                    red_cards[name].append(word)
-                
-        return red_cards
-
-
-    def get_green_cards(self):
-        green_cards = {}
-        with open("Basic_Green_Cards.txt", "r") as file:
-            for line in file.readlines():
-                card = line.strip().split("&")
-
-                name = card[0].lower()
-                green_cards[name] = []
-                
-                for word in card[1].split(", "):
-                    green_cards[name].append(word.lower())
-
-        return green_cards
-
-
-    def modify_hand_red(self, deck, hand, wv):
+    def modify_hand_red(self, hand, wv):
         size_vec = 300
-        card_to_vec = {}
+        card_to_vec = []
 
         for card in hand:
-            # check each of these words and calculate its average vector
-            words_to_check = card.split() + deck[card]
-
+            # Set average vector to 0
+            # Set count to 0, will be used to get average vector
             average_vector = np.zeros(shape=size_vec)
             count = 0
 
-            for word in words_to_check:
+            # For each word in card name + description:
+            # removed description since i think it introduces a lot of noise
+            # -> + simple_preprocess(card.description)
+            for word in (simple_preprocess(card.name)):
+                # To prevent errors, only check if it exists in the word vector dictionary
                 if word in wv.key_to_index:
                     count += 1
                     average_vector += wv[word]
             
-            card_to_vec[card] = average_vector/count if count > 0 else average_vector
+            card_to_vec.append((card, average_vector/count if count > 0 else average_vector))
+
         return card_to_vec
 
 
-    def modify_hand_green(self, deck, hand, wv):
+    def modify_hand_green(self, card, wv):
         size_vec = 300
-        card_to_vec = {}
 
-        for card in hand.split():
-            words_to_check = card.split() + deck[card]
+        average_vector = np.zeros(shape=size_vec)
+        count = 0
 
-            average_vector = np.zeros(shape=size_vec)
-            count = 0
+        for word in (simple_preprocess(card.name) + simple_preprocess(card.description)):
+            if word in wv.key_to_index:
+                count += 1
+                average_vector += wv[word]
 
-            for word in words_to_check:
-                if word in wv.key_to_index:
-                    count += 1
-                    average_vector += wv[word]
-            
-            card_to_vec[card] = average_vector/count if count > 0 else average_vector
-        return card_to_vec
+        return (card, average_vector/count if count > 0 else average_vector)
 
 
-    def draw_red_cards(self, deck, num):
-        hand = []
-        for _ in range(num):
-            hand.append(random.choice(list(deck.keys())))
-        return hand
-
-
-    def pick_using_model(self, wv):
-        red_cards = self.get_red_cards()
-        green_cards = self.get_green_cards()
+    def play_with_model(self):
+        red_cards = self.hand
+        green_card = self.green_card
         
-        # get 5 cards from red cards
-        red_card_hand = self.draw_red_cards(red_cards, 5)
+        red_cards_with_vectors = self.modify_hand_red(red_cards, self.wordvector)
+        green_card_with_vector = self.modify_hand_green(green_card, self.wordvector)
 
-        # pick a random green card
-        green_card = random.choice(list(green_cards.keys()))
-        
-        # create red card hand with vector for each card
-        # to do this, go through all words of the red card and get its average vector
-        red_card_hand = self.modify_hand_red(red_cards, red_card_hand, wv)
-        
-        # now do the same to the green card
-        green_card = self.modify_hand_green(green_cards, green_card, wv)
-        
-        # now go through each red card and check its cosine similarity to the green card. pick the
-        # highest
-        check_green = list(green_card.keys())[0]
-        
         best_sim = -5
-        best_card = ""
-        
-        for card in red_card_hand:
-            similarity = np.dot(green_card[check_green], red_card_hand[card])/(np.linalg.norm(green_card[check_green])*np.linalg.norm(red_card_hand[card]))
-            print(f"{card}'s similarity to '{check_green}' is {similarity}")
+        best_card = 0
+        # print("\nModel choices:")
+        for i, card in enumerate(red_cards_with_vectors):
+            if (np.any(green_card_with_vector[1]) and np.any(card[1])):
+                similarity = (np.dot(green_card_with_vector[1], card[1]) /
+                            (np.linalg.norm(green_card_with_vector[1]) * 
+                            np.linalg.norm(card[1]))
+                                )
+            else:
+                similarity = -1
+            # print(f"{card[0].name} similarity to {green_card.name} is: {similarity}")
             if similarity > best_sim:
                 best_sim = similarity
-                best_card = card
+                best_card = i
         
-        # either our green card did not have a score or our red cards did not have a score
-        if best_card == "":
-            best_card = random.choice(list(red_card_hand.keys()))
+        # print(f"\nModel thinks {red_cards[best_card].name} is best with {green_card.name} with a score of {best_sim}\n")
+        return self.hand.pop(best_card)
 
-        print(f"\nCards: {list(red_card_hand.keys())}")
-        print(f"The best card for '{check_green}' is '{best_card}' with a score of {best_sim}")
-        pass
-    
-    #
-    # END ADD -J
-    #
 
     def __str__(self):
         """

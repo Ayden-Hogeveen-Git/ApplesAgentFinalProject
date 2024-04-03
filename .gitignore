@@ -1,3 +1,5 @@
 *.cpython
 .DS_Store
 *.pyc
+a2a.*
+src/corpora/*
