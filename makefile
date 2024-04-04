@@ -2,14 +2,17 @@
 
 # Variables
 PYTHON = python3
-ARGS = 3 10 Basic_Green_Cards.txt Basic_RED_cards.txt
+ARGS = 3 10 src/Basic_Green_Cards.txt src/Basic_RED_cards.txt
 
 # Default target
 all: run
 
 # Run the main file
 run:
-	$(PYTHON) main.py $(ARGS)
+	$(PYTHON) src/main.py $(ARGS)
+
+wext:
+	$(PYTHON) -m py_compile src/*.py
 
 # Clean the project
 clean:

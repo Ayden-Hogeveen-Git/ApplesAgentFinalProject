@@ -10,9 +10,10 @@ def tournament(num_games=100):
     agents.append(Agent("alit"))
     agents.append(Agent("pos"))
     agents.append(Agent("assoc"))
+    agents.append(Agent("trained_model"))
 
     # Initialize counters for wins
-    wins = {0: 0, 1: 0, 2: 0, 3: 0}
+    wins = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
 
     for i in range(num_games):
         # Play a game and get the result
@@ -23,7 +24,7 @@ def tournament(num_games=100):
         print(i+1)
 
     # Print or return the results
-    print(f"Random Agent wins: {wins[0]}, Alit Agent wins: {wins[1]}, Pos Agent wins: {wins[2]}, Levenshtein Agent wins: {wins[3]}")
+    print(f"Random Agent wins: {wins[0]}, Alit Agent wins: {wins[1]}, Pos Agent wins: {wins[2]}, Levenshtein Agent wins: {wins[3]}, Model wins: {wins[4]}")
 
 def play_game(agents):
     # Create a game instance
