@@ -1,11 +1,14 @@
 ### Ensure the following before you run the program:
 You are on the student server *(to run with python3.11)*.
+
 You have *nltk*, *gensim*, *numpy*, and *datasets* in your system or venv. If not, install them through *pip*:
 - *pip install nltk*
 - *pip install gensim*
 - *pip install numpy*
 - *pip install datasets*
 
+If extracted from .tar, make sure *main.py* has execute permission:
+- *chmod +x main.py*
 
 # Running the program
 ### w/Basic Cards
