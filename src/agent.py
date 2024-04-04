@@ -8,7 +8,6 @@ from decks import RedCards  # Demo purposes ONLY
 # nltk.download()  # uncomment then run to manage nltk packages
 
 from nltk.tokenize import RegexpTokenizer
-import gensim
 
 from datasets import load_dataset   # Load WikiText corpus
 from gensim.utils import simple_preprocess  # Tokenizes text
@@ -16,6 +15,7 @@ from gensim.models import Word2Vec  # Word2Vec model
 from gensim.models import KeyedVectors  # To save and use model after training
 import os.path  # To check if word vector file is available
 import time     # To time model training time
+
 import numpy as np
 
 

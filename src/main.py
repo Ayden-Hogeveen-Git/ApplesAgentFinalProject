@@ -1,8 +1,5 @@
-#!/usr/bin/env python3.11
-
 import sys
 from game import Game
-
 
 if __name__ == "__main__":
     if (len(sys.argv) != 5):

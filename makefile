@@ -1,18 +1,14 @@
 # Makefile for Python project
 
 # Variables
-PYTHON = python3
-ARGS = 3 10 src/Basic_Green_Cards.txt src/Basic_RED_cards.txt
+PYTHON = python3.11
 
 # Default target
 all: run
 
-# Run the main file
 run:
-	$(PYTHON) src/main.py $(ARGS)
-
-wext:
-	$(PYTHON) -m py_compile src/*.py
+	@echo "#!/bin/bash\n\nARGS=\"\$$1 \$$2 \$$3 \$$4\"\nPYTHON_VER=\"$(PYTHON)\"\n\nsource env/bin/activate\n\$$PYTHON_VER src/main.py \$$ARGS" > run.sh 
+	@chmod +x run.sh
 
 # Clean the project
 clean:

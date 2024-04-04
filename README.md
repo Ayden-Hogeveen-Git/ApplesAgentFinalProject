@@ -1,28 +1,9 @@
-### Ensure the following before you run the program:
-You are on the student server *(to run with python3.11)*.
+# Make sure you are on the student server! The shell script uses python3.11 to run the code
 
-You have *nltk*, *gensim*, *numpy*, and *datasets* in your system or venv. If not, install them through *pip*:
-- *pip install nltk*
-- *pip install gensim*
-- *pip install numpy*
-- *pip install datasets*
-
-If extracted from .tar, make sure *main.py* has execute permission:
-- *chmod +x main.py*
 
 # Running the program
-### w/Basic Cards
-To run the program with basic cards, navigate to the location of the makefile, then in the Terminal execute: 
 - *make run*
-
-This will run the program using the basic green and red cards included in *src/*
-
-### w/Extensions
-To run the program with extension cards, execute the following command:
-- *./src/main.py [args like in agent specification]*
-
-Or if you are in *src/* folder:
-- *./main.py [args like in agent specification]*
+- *./run.sh [args as shown in agent specification]*
 
 
 # Files
