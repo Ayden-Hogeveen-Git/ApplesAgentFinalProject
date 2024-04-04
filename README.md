@@ -39,9 +39,9 @@ Or if you are in *src/* folder:
 
 
 # Important Note
-When running *main.py*, the WikiText Corpus (~750MB) will be downloaded in *~/.cache/huggingface/datasets/wikitext* **unless** the corpus is included in *src/corpora*, which will only be included when submitting the final implementation.
+When running *main.py*, the WikiText Corpus (\~750MB) will be downloaded in *\~/.cache/huggingface/datasets/wikitext* **unless** the corpus is included in *src/corpora*, which will only be included when submitting the final implementation.
 
-Please expect to download ~750MB worth of data when running the program if the corpus is not included.
+Please expect to download \~750MB worth of data when running the program if the corpus is not included.
 
 Once the model is trained, *a2a.wordvectors* and *a2a.wordvectors.vectors.npy* will ***appear in the same location your terminal is currently focused in***. If this exists, running the program will use the trained model vectors, meaning it will not run as long as the first time.
 
