@@ -63,10 +63,10 @@ class Agent:
         elif (self.agent_type == "alit"):
             # Pick the first card that has the same letter
             # as our green card. Return its index
-            first_letter = self.green_card[0]
+            first_letter = self.green_card.name[0]
 
             for i in range(len(cards)):
-                if (self.hand[i][0] == first_letter):
+                if (self.hand[i].name[0] == first_letter):
                     return i
                 
             # Return the first card index since no other cards have the
@@ -89,7 +89,7 @@ class Agent:
             tags = self.get_pos_tags()
             
             if (self.green_card is not None):
-                target = nltk.pos_tag([self.green_card])
+                target = nltk.pos_tag([self.green_card.name]) + nltk.pos_tag([self.green_card.description])
                             
                 for tag in tags:
                     if (target == tag[0][1]):
@@ -148,9 +148,9 @@ class Agent:
         card, otherwise plays the first card
         :return: card datatype
         """
-        first_letter = self.green_card[0]
+        first_letter = self.green_card.name[0]
         for i in range(len(self.hand)):
-            if (self.hand[i][0] == first_letter):
+            if (self.hand[i].name[0] == first_letter):
                 return self.hand.pop(i)
         
         return self.hand.pop(0)
@@ -163,7 +163,7 @@ class Agent:
         tags = self.get_pos_tags()
         
         if (self.green_card is not None):
-            target = nltk.pos_tag([self.green_card])
+            target = nltk.pos_tag([self.green_card.name]) + nltk.pos_tag([self.green_card.description])
                         
             for tag in tags:
                 if (target == tag[0][1]):
@@ -243,7 +243,7 @@ class Agent:
         """
         pos_tags = []
         for card in self.hand:
-            pos_tags.append(nltk.pos_tag([card]))
+            pos_tags.append(nltk.pos_tag([card.name]) + nltk.pos_tag([card.description]))
         return pos_tags
 
     def get_hand_size(self):
